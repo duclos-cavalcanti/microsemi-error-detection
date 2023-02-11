@@ -1,0 +1,4 @@
+*.pyc
+__pycache__/
+__pycache__/*
+smf2/__pycache__/*
