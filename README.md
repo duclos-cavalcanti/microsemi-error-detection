@@ -2,10 +2,7 @@
 <p align="center">
   FPGA/SoC Implementation using Hamming Codes' Linear Error Correcting Encoding
   <center>
-  <!-- <img src="./.github/assets/example.jpg" align="middle" alt="Example" -->
-  <!--      height="500"> -->
-  <!-- </center> -->
-  <img src="./.github/assets/project-1.png" align="middle" alt="Design"
+  <img src="./.github/assets/example.jpg" align="middle" alt="Example"
        height="500">
   </center>
 </p>

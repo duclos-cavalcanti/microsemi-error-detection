@@ -3,6 +3,16 @@ import argparse
 
 from smf2 import image, hamming, utils, uart_serial
 
+SQUID = ["0000000110000000",
+         "0000011111100000",
+         "0001111111111000",
+         "0011111111111100",
+         "0101101111011010",
+         "1111111111111111",
+         "0011100000011100",
+         "0001000000001000"]
+
+
 def Test():
     uart = uart_serial.UART_Interface(timeout=0.5)
     uart.TestMode(rand=False)
@@ -13,24 +23,14 @@ def Debug():
 
 def Start():
     encoder = hamming.HammingEncoder()
-    squid = ["0000000110000000",
-             "0000011111100000",
-             "0001111111111000",
-             "0011111111111100",
-             "0101101111011010",
-             "1111111111111111",
-             "0011100000011100",
-             "0001000000001000"]
-
-    image = utils.image_to_array(''.join(squid))
-    enc_image = [ encoder.Run(i) for i in image ]
+    payload = [ encoder.Run(i) for i in utils.image_to_array(''.join(SQUID)) ]
 
     print("ERROR CORRECTION SIMULATION!")
     print("-------------------------------------------------------")
-
     print("LIVE FEED:")
+
     uart = uart_serial.UART_Interface(timeout=0.5)
-    uart.ImageMode(payload=enc_image)
+    uart.ImageMode(payload=payload)
 
 def GetArgs():
     """docstring for GetArgs"""
@@ -41,7 +41,7 @@ def GetArgs():
     parser.add_argument(
         "-m",
         "--mode",
-        default="image",
+        default="debug",
         help="mode in which the script runs",
     )
 
@@ -50,17 +50,14 @@ def GetArgs():
 
 def main():
     args = GetArgs()
-    if args.mode == "image":
-        Start()
-
-    elif args.mode == "debug":
+    if args.mode == "debug":
         Debug()
 
     elif args.mode == "test":
         Test()
 
     else:
-        pass
+        Start()
 
 if __name__ == "__main__":
     main()
