@@ -12,8 +12,7 @@
 <br>
 
 ## 1. Introduction
-
-WIP!
+Look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed documentation!
 
 #### TODOs
 - [ ] update `SETUP.md` to a complete recreation of the project
