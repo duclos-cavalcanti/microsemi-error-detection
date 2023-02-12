@@ -1,8 +1,4 @@
-<h1 align="center">Microsemi SmartFusion2 Error Detection</h1>
-<p align="center">
-  Installation, Setup, Development and Programming Device
-</p>
-<br>
+# Toolchain Setup
 
 # 1. Instructions
 ## 1.1. Setup

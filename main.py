@@ -27,7 +27,6 @@ def Start():
 
     print("ERROR CORRECTION SIMULATION!")
     print("-------------------------------------------------------")
-    # utils.print_hamming_trafo(squid, image, enc_image)
 
     print("LIVE FEED:")
     uart = uart_serial.UART_Interface(timeout=0.5)

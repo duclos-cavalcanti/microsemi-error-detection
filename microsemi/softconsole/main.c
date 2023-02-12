@@ -12,7 +12,8 @@ void system_update(void);
 void system_fsm(void);
 int  system_snapshot(void);
 
-void UART0_RX_IRQHandler(mss_uart_instance_t * uart);
+void gpio_setup(void);
+void uart_setup(void);
 
 system_t S = { 0 };
 
@@ -25,8 +26,10 @@ system_t S = { 0 };
 // ==============================================================================
 // main
 int main() {
+    // CMSIS system initialiation
     SystemInit();
-    uart_setup(UART0_RX_IRQHandler);
+
+    uart_setup();
     gpio_setup();
     timer1_setup(MSS_TIMER_PERIODIC_MODE, (g_FrequencyPCLK0 * 1.5) ); // 1.5 second
     timer2_setup(MSS_TIMER_PERIODIC_MODE, (g_FrequencyPCLK0 * 0.5) ); // 1 second
@@ -35,6 +38,7 @@ int main() {
 
     while(1) {
         system_fsm();
+        system_update();
     }
 
     return 0;
@@ -49,9 +53,6 @@ void system_update() {
 }
 
 void system_fsm() {
-    static int cnt = 0;
-    system_update();
-
     switch(S.state) {
         case INIT:
             S.poll          = 0;
@@ -295,7 +296,35 @@ void GPIO5_IRQHandler(void) {
     MSS_GPIO_clear_irq( MSS_GPIO_5 );
 }
 
-// EXTRA PIN
-void GPIO6_IRQHandler(void) {
-    MSS_GPIO_clear_irq( MSS_GPIO_6 );
+// drivers setup
+void gpio_setup(void) {
+    // Initialize SmartFusion MSS GPIOs
+    MSS_GPIO_init();
+
+    // Configure MSS GPIOs LEDs and turn them off
+    MSS_GPIO_config( LEDS[0] , MSS_GPIO_OUTPUT_MODE );
+    MSS_GPIO_config( LEDS[1] , MSS_GPIO_OUTPUT_MODE );
+    MSS_GPIO_config( LEDS[2] , MSS_GPIO_OUTPUT_MODE );
+    MSS_GPIO_config( LEDS[3] , MSS_GPIO_OUTPUT_MODE );
+    MSS_GPIO_set_output(LEDS[0], 1);
+    MSS_GPIO_set_output(LEDS[1], 1);
+    MSS_GPIO_set_output(LEDS[2], 1);
+    MSS_GPIO_set_output(LEDS[3], 1);
+
+    // Switches/Buttons
+    MSS_GPIO_config( SWS[0] , MSS_GPIO_INPUT_MODE | MSS_GPIO_IRQ_EDGE_POSITIVE );
+    MSS_GPIO_config( SWS[1] , MSS_GPIO_INPUT_MODE | MSS_GPIO_IRQ_EDGE_POSITIVE );
+    MSS_GPIO_enable_irq(SWS[0]);
+    MSS_GPIO_enable_irq(SWS[1]);
+}
+
+void uart_setup() {
+    // Initialize MSS UART
+    MSS_UART_init(&g_mss_uart0,
+                  MSS_UART_57600_BAUD,
+                  MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
+
+    MSS_UART_set_rx_handler(&g_mss_uart0,
+                            UART0_RX_IRQHandler,
+                            MSS_UART_FIFO_SINGLE_BYTE);
 }

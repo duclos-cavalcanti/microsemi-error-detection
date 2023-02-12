@@ -16,3 +16,6 @@ windows:
   - window_name: py
     panes:
       - nvim main.py
+  - window_name: wiki
+    panes:
+      - ls -l
