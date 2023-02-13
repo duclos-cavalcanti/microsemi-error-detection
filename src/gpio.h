@@ -31,6 +31,9 @@ static long unsigned int SW_MASKS[2] = {
     MSS_GPIO_4_MASK, MSS_GPIO_5_MASK,
 };
 
+static const mss_gpio_id_t DECODED_FLAG = MSS_GPIO_6;
+static long unsigned int   DECODED_FLAG_MASK = MSS_GPIO_6_MASK;
+
 #define LED_TOGGLE(CHAR)  led_toggle(CHAR)
 #define LED_ON(CHAR)      led_on(CHAR)
 #define LED_OFF(CHAR)     led_off(CHAR)

@@ -41,7 +41,7 @@ def GetArgs():
     parser.add_argument(
         "-m",
         "--mode",
-        default="debug",
+        default="demo",
         help="mode in which the script runs",
     )
 

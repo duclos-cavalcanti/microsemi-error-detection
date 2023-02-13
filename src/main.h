@@ -52,8 +52,7 @@ typedef enum state {
   RX_IMAGE,
   TX_IMAGE,
   DECODE,
-  FETCH,
-  DONE,
+  END,
   FAULT,
 } state_t;
 
@@ -66,7 +65,8 @@ typedef enum state {
 typedef struct slave {
     uint32_t  state;
     uint32_t  data;
-    uint32_t  tx_cnt;
+    uint32_t  cnt;
+    uint8_t   finished;
 } slave_t;
 
 typedef struct system {

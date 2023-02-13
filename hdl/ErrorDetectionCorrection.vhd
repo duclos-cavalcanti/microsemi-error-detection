@@ -16,7 +16,7 @@ entity ErrorDetectionCorrectionSlave IS
         PREADY      : OUT STD_LOGIC;
         PSLVERR     : OUT STD_LOGIC;
         -- Specific use-case I/Os
-        DECODED     : OUT STD_LOGIC;
+        DETECT_ERR  : OUT STD_LOGIC;
         LEDS        : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
     );
 end ErrorDetectionCorrectionSlave;
@@ -25,20 +25,22 @@ architecture rtl OF ErrorDetectionCorrectionSlave IS
     constant data_width : integer := 32;
     constant address_offset_width : integer := 8;
 
+    type state_t IS (IDLE, MASTER_WRITE, SLAVE_DECODE, MASTER_READ, SLAVE_END);
     type memory_mapped_register_t is array (0 TO (address_offset_width ** 2) - 1) of std_logic_vector(data_width - 1 downto 0);
-
+    type decoded_arr_t is array(1 to 12) of std_logic_vector(15 downto 0);
     type leds_t is array(4 downto 0) of std_logic_vector(3 downto 0);
-    constant LEDS_ARR : leds_t := ("0000", "0111", "1011", "1101", "1110");
 
-    type state IS (IDLE, MASTER_WRITE, SLAVE_DECODE, MASTER_READ, SLAVE_END);
+    signal current_state, next_state: state_t;
 
     signal MEMORY_MAPPED_REGISTERS : memory_mapped_register_t;
+
+    constant LEDS_ARR : leds_t := ("0000", "0111", "1011", "1101", "1110");
     signal leds_signal : std_logic_vector(3 downto 0);
-    signal current_state, next_state: state;
-    signal decode_en : std_logic := '0';
-    signal decode_end : std_logic := '0';
+
+    signal decoded_arr : decoded_arr_t;
+    signal decoded : std_logic := '0';
 begin
-    DECODED <= decode_end;
+    DETECT_ERR <= decoded;
     LEDS <= leds_signal;
 
     bus_process : process (PCLK, PRESETN) is
@@ -52,13 +54,13 @@ begin
             PRDATA_V := (others => '0');
             PREADY_V := '0';
             PSLVERR_V := '0';
-            PINDEX_V  := '0';
+            PINDEX_V  := 0;
 
         elsif rising_edge(PCLK) then
             PRDATA_V  := (others => '0');
             PREADY_V  := '0';
             PSLVERR_V := '0';
-            PINDEX_V  := '0';
+            PINDEX_V  := 0;
             -- SLAVE SELECTED
             if PSEL = '1' then
                 -- ALLOWED TO REACT
@@ -68,9 +70,14 @@ begin
                     -- WRITE
                     if PWRITE = '1' then
                         MEMORY_MAPPED_REGISTERS(PINDEX_V) <= PWDATA;
+
                     -- READ
                     else
-                        PRDATA_V := MEMORY_MAPPED_REGISTERS(PINDEX_V);
+                        if PINDEX_V >= 1 and PINDEX_V <= 12 then
+                            PRDATA_V := decoded_arr(PINDEX_V) & X"0000";
+                        else
+                            PRDATA_V := MEMORY_MAPPED_REGISTERS(PINDEX_V);
+                        end if;
                     end if;
                 end if;
             end if;
@@ -92,7 +99,6 @@ begin
     slave_fsm_state_def: process (current_state) is
     begin
         next_state <= current_state;
-        decode_en <= '0';
         case current_state is
             when IDLE =>
                 if MEMORY_MAPPED_REGISTERS(0) = X"00000001" then
@@ -110,27 +116,25 @@ begin
                 if MEMORY_MAPPED_REGISTERS(0) = X"00000003" then
                     next_state <= MASTER_READ;
                 end if;
-                decode_en = '1';
-                LEDS_OUT <= LEDS_ARR(2);
+                leds_signal <= LEDS_ARR(2);
 
             when MASTER_READ =>
                 if MEMORY_MAPPED_REGISTERS(0) = X"00000004" then
                     next_state <= SLAVE_END;
                 end if;
-                LEDS_OUT <= LEDS_ARR(3);
+                leds_signal <= LEDS_ARR(3);
 
             when SLAVE_END =>
-                LEDS_OUT <= LEDS_ARR(4);
+                leds_signal <= LEDS_ARR(4);
         end case;
     end process;
 
     decode_process : process (PCLK, PRESETN) is
         variable encoded_vector : std_logic_vector(15 downto 0) := (others => '0');
         variable decoded_vector : std_logic_vector(15 downto 0) := (others => '0');
-        variable parity_vector : std_logic_vector(4 downto 0) := (others => '0');
+        variable parity_vector : std_logic_vector(0 to 4) := (others => '0');
         variable err_vector : std_logic_vector(1 downto 0) := (others => '0');
         variable err_pos : integer := 0;
-        variable decode_end : std_logic := '0';
     begin
         if PRESETN = '0' then
             encoded_vector := (others => '0');
@@ -139,30 +143,34 @@ begin
             err_vector := (others => '0');
             err_pos := 0;
 
-            decode_end := '0';
+            decoded_arr <= (others => (others => '0'));
+            decoded <= '0';
         elsif rising_edge(PCLK) then
-            if decode_en = '1' then
-                encoded_vector := MEMORY_MAPPED_REGISTERS(i*4)(15 downto 0)
-                parity_vec(0) <= enc_data(1) xor enc_data(3) xor enc_data(5) xor enc_data(7) xor enc_data(9) xor enc_data(11)  xor enc_data(13) xor enc_data(15);
-                parity_vec(1) <= enc_data(2) xor enc_data(3) xor enc_data(6) xor enc_data(7) xor enc_data(10) xor enc_data(11) xor enc_data(14) xor enc_data(15);
-                parity_vec(2) <= enc_data(4) xor enc_data(5) xor enc_data(6) xor enc_data(7) xor enc_data(12) xor enc_data(13) xor enc_data(14) xor enc_data(15);
-                parity_vec(3) <= enc_data(8) xor enc_data(9) xor enc_data(10) xor enc_data(11) xor enc_data(12) xor enc_data(13) xor enc_data(14) xor enc_data(15);
-                parity_vec(4) <= enc_data(1) xor enc_data(2) xor enc_data(3) xor enc_data(4) xor enc_data(5) xor enc_data(6) xor enc_data(7) xor enc_data(8) xor enc_data(9) xor enc_data(10) xor enc_data(11) xor enc_data(12) xor enc_data(13) xor enc_data(14) xor enc_data(15) xor enc_data(16);
+            if current_state = SLAVE_DECODE then
+                for i in 1 to 12 loop
+                    for j in 0 to 15 loop
+                        encoded_vector(15 - j) := MEMORY_MAPPED_REGISTERS(i*4)(j);
+                    end loop;
+                    parity_vector(0) := encoded_vector(1) xor encoded_vector(3) xor encoded_vector(5)  xor encoded_vector(7)  xor encoded_vector(9)  xor encoded_vector(11) xor encoded_vector(13) xor encoded_vector(15);
+                    parity_vector(1) := encoded_vector(2) xor encoded_vector(3) xor encoded_vector(6)  xor encoded_vector(7)  xor encoded_vector(10) xor encoded_vector(11) xor encoded_vector(14) xor encoded_vector(15);
+                    parity_vector(2) := encoded_vector(4) xor encoded_vector(5) xor encoded_vector(6)  xor encoded_vector(7)  xor encoded_vector(12) xor encoded_vector(13) xor encoded_vector(14) xor encoded_vector(15);
+                    parity_vector(3) := encoded_vector(8) xor encoded_vector(9) xor encoded_vector(10) xor encoded_vector(11) xor encoded_vector(12) xor encoded_vector(13) xor encoded_vector(14) xor encoded_vector(15);
+                    parity_vector(4) := encoded_vector(0) xor encoded_vector(1) xor encoded_vector(2) xor encoded_vector(3)  xor encoded_vector(4)  xor encoded_vector(5)  xor encoded_vector(6)  xor encoded_vector(7)  xor encoded_vector(8) xor encoded_vector(9) xor encoded_vector(10) xor encoded_vector(11) xor encoded_vector(12) xor encoded_vector(13) xor encoded_vector(14) xor encoded_vector(15);
 
-                err_pos := to_integer(unsigned(parity_vec(3 downto 0)));
-                err_vector := "00" when err_pos  = 0 and parity_vector(4) = '0' else
-                              "01" when err_pos /= 0 and parity_vector(4) = '1' else
-                              "10" when err_pos /= 0 and parity_vector(4) = '0' else
-                              "11";
-                -- for loop in vhdl and flip err_pos bit
-                decoded_vector := encoded_vector;
-                for
+                    err_pos := to_integer(unsigned(parity_vector(0 to 3)));
+                    err_vector := "00" when err_pos  = 0 and parity_vector(4) = '0' else
+                                  "01" when err_pos /= 0 and parity_vector(4) = '1' else
+                                  "10" when err_pos /= 0 and parity_vector(4) = '0' else
+                                  "11";
 
-                decode_end := '1';
-            else
-                decode_end := '0';
+                    decoded_vector := encoded_vector;
+                    if err_vector /= "00" and err_vector /= "10" then
+                        decoded_vector(err_pos) := not decoded_vector(err_pos);
+                    end if;
+                    decoded_arr(i) <= decoded_vector;
+                end loop;
+                decoded <= '1';
             end if;
         end if;
-        decode_end <= decode_end_v;
     end process;
 end rtl;

@@ -68,7 +68,8 @@ void system_fsm() {
 
             S.slave.state           = 0xFFFFFFFF;
             S.slave.data            = 0x00000000;
-            S.slave.tx_cnt          = 0;
+            S.slave.finished        = 0;
+            S.slave.cnt             = 0;
 
             LED_ON(S.ld_idx);
             SYSTEM_STATE_SET(IDLE);
@@ -96,13 +97,12 @@ void system_fsm() {
             if (SLAVE_STATE() == SLAVE_IDLE) {
                 SLAVE_STATE_SET(MASTER_WRITE);
 
-            } else if (SLAVE_STATE() == SLAVE_WRITE) {
+            } else if (SLAVE_STATE() == MASTER_WRITE) {
+                if (S.slave.cnt < PAYLOAD_TOTAL) {
+                    S.slave.data = S.image_err_bits[S.slave.cnt];
+                    WRITE_SLAVE(S.slave.data, (S.slave.cnt++));
 
-                if (S.slave.tx_cnt < PAYLOAD_TOTAL) {
-                    S.slave.data = S.image_err_bits[S.slave.tx_cnt];
-                    WRITE_SLAVE(S.slave.data, (S.slave.tx_cnt++));
-
-                } else if (S.slave.tx_cnt == (PAYLOAD_TOTAL)) {
+                } else if (S.slave.cnt == (PAYLOAD_TOTAL)) {
                     SYSTEM_STATE_SET(DECODE);
                     SLAVE_STATE_SET(SLAVE_DECODE);
                     LED_OFF(S.ld_idx);
@@ -114,25 +114,21 @@ void system_fsm() {
             break;
 
         case DECODE:
-            if (SLAVE_STATE() == MASTER_READ) {
-                SYSTEM_STATE_SET(FETCH);
+            if (S.slave.finished) {
+                SLAVE_STATE_SET(MASTER_READ);
+                for (uint8_t i=0; i<PAYLOAD_TOTAL; i++) {
+                    delay100ms(5);
+                    uint32_t data = READ_SLAVE(i);
+                    data = data >> 16;
+                    S.image_dec_bits[i] = (uint16_t) (0x0000FFFF & data);
+                }
                 LED_OFF(S.ld_idx);
-                LED_ON(LED_0);
-                LED_ON(LED_1);
+                SLAVE_STATE_SET(SLAVE_END);
+                SYSTEM_STATE_SET(END);
             }
             break;
 
-        case FETCH:
-            for (uint8_t i=0; i<PAYLOAD_TOTAL; i++) {
-                uint32_t data = READ_SLAVE(i);
-                data = data >> 16;
-                S.image_dec_bits[i] = (uint16_t) (0x0000FFFF & data);
-            }
-            SLAVE_STATE_SET(SLAVE_END);
-            SYSTEM_STATE_SET(END);
-            break;
-
-        case DONE:
+        case END:
             for (uint8_t i=LED_0; i<=LED_3; i++) LED_ON(LEDS[i]);
             break;
 
@@ -147,19 +143,19 @@ void system_fsm() {
     if (S.b2_flag) { S.b2_flag = 0; }
 }
 
+#define EMPTY_SPACE ' '
 int system_snapshot() {
     uint8_t* buf = S.tx_buf;
     int len, total = sizeof(S.tx_buf);
 
-    len = snprintf(buf, total,
+    buf += (len = snprintf(buf, total,
                    "POLL[%d]\n\r"
                    "------\n\r"
                    "SW1:  %d   \t| %dx\n\r"
                    "SW2:  %d   \t| %dx\n\r"
                    "LEDS[4-7]: \t| [%d%d%d%d]\n\r"
                    "UART[%d]:  \t| Bytes: [%d]\n\r"
-                   "SLAVE[%d]  \t| 0x%08x:\n\r"
-                   "CURRENT PAYLOAD:\n\r"
+                   "SLAVE[%d]  \t| Sent: %d\n\r"
                    "-------------------------------------------------------\n\r",
                    ++S.poll,
                    S.b1_flag,
@@ -169,18 +165,15 @@ int system_snapshot() {
                    S.LEDS[0], S.LEDS[1], S.LEDS[2], S.LEDS[3],
                    (S.rx_cnt/16),
                    S.rx_cnt,
-                   S.slave.tx_cnt,
-                   S.slave.data
-                   );
-
-    buf += len;
+                   S.slave.finished,
+                   S.slave.cnt
+                   ));
     total -= len;
 
-    len = snprintf(buf, total,
+    buf += (len = snprintf(buf, total,
                   "IMAGE BITS%*cIMAGE ERR BITS%*cIMAGE DEC BITS\n\r",
                   (21 - 10),  EMPTY_SPACE,
-                  (21 - 14),  EMPTY_SPACE);
-    buf += len;
+                  (21 - 14),  EMPTY_SPACE));
     total -= len;
 
     for (int i=0; i<PAYLOAD_TOTAL; i++) {
@@ -188,20 +181,39 @@ int system_snapshot() {
        uint16_t payload_err = *(S.image_err_bits + i);
        uint16_t payload_dec = *(S.image_dec_bits + i);
 
-        sprintf_uart16(buf, &total, payload);
-        sprintf_char_array(buf, &total, " | ");
+        buf += (len = snprintf(buf, total, "["));
+        total -= len;
 
-        sprintf_uart16(buf, &total, payload_err);
-        sprintf_char_array(buf, &total, " | ");
+        for (int k=15; k>=0; k--) {
+            uint16_t lsb = ((payload >> k) & 0x0001);
+            buf += (len = snprintf(buf, total, "%d", lsb));
+            total -= len;
+        }
+        buf += (len = snprintf(buf, total, "] | ["));
+        total -= len;
 
-        sprintf_uart16(buf, &total, payload_dec);
-        sprintf_char_array(buf, &total, "\n\r");
+        for (int k=15; k>=0; k--) {
+            uint16_t lsb = ((payload_err >> k) & 0x0001);
+            buf += (len = snprintf(buf, total, "%d", lsb));
+            total -= len;
+        }
+        buf += (len = snprintf(buf, total, "] | ["));
+        total -= len;
+
+        for (int k=15; k>=0; k--) {
+            uint16_t lsb = ((payload_dec >> k) & 0x0001);
+            buf += (len = snprintf(buf, total, "%d", lsb));
+            total -= len;
+        }
+        buf += (len = snprintf(buf, total, "]\n\r"));
+        total -= len;
     }
 
-    sprintf_char_array(buf, &total,
-                       "-------------------------------------------------------\n\r"
-                       "\n");
+    buf += (len = snprintf(buf, total,
+                          "-------------------------------------------------------\n\r"
+                          "\n"));
 
+    total -= len;
     return (total > 0);
 }
 
@@ -262,6 +274,12 @@ void GPIO5_IRQHandler(void) {
     MSS_GPIO_clear_irq( MSS_GPIO_5 );
 }
 
+// decoded gpio pin from fabric
+void GPIO6_IRQHandler(void) {
+    S.slave.finished = 1;
+    MSS_GPIO_clear_irq( MSS_GPIO_6 );
+}
+
 // drivers setup
 void gpio_setup(void) {
     // Initialize SmartFusion MSS GPIOs
@@ -282,6 +300,10 @@ void gpio_setup(void) {
     MSS_GPIO_config( SWS[1] , MSS_GPIO_INPUT_MODE | MSS_GPIO_IRQ_EDGE_POSITIVE );
     MSS_GPIO_enable_irq(SWS[0]);
     MSS_GPIO_enable_irq(SWS[1]);
+
+    // Decoded finished flag from fabric
+    MSS_GPIO_config( DECODED_FLAG , MSS_GPIO_INPUT_MODE | MSS_GPIO_IRQ_EDGE_POSITIVE );
+    MSS_GPIO_enable_irq(DECODED_FLAG);
 }
 
 void uart_setup() {
