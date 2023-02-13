@@ -16,10 +16,13 @@ SpaceShip_Image_Matrix = {
                    }
 
 class Image:
-    def __init__(self, image_dict) -> None:
+    def __init__(self, image_dict, path) -> None:
         if (self.CheckDict(image_dict)):
             self.image_dict = image_dict
         self.image = PImage.new('RGB', (512, 256), "white")
+        self.Create()
+        self.Save(path)
+
 
     def CheckDict(self, image_dict: dict) -> bool:
         """Checks if all Dictionnary values have the same length"""
@@ -35,14 +38,14 @@ class Image:
                 continue
         return result
 
-    def ExpandData(self) -> str:
+    def ExpandData(self) -> None:
         value = ""
         for key in SpaceShip_Image_Matrix:
-            for i in range(32):
+            for _ in range(32):
                 value = value + SpaceShip_Image_Matrix[key]
         data = []
         for letter in value:
-            for i in range(32):
+            for _ in range(32):
                 data.append(color_map[letter])
         self.data = data
 
@@ -86,10 +89,8 @@ class Image:
             result = result + reduced_row[i:i+512][0:16]
         return result
 
-def prepare():
-    image = Image(SpaceShip_Image_Matrix)
-    image.Create()
-    image.Save("space_ship.bmp")
+def example():
+    image = Image(SpaceShip_Image_Matrix, "space_ship.bmp")
     return image.Read(image.path)
 
 
