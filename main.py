@@ -1,7 +1,7 @@
 import sys
 import argparse
 
-from smf2 import image, hamming, utils, uart_serial
+from module import image, hamming, utils, uart_serial
 
 SQUID = ["0000000110000000",
          "0000011111100000",

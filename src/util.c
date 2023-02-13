@@ -1,18 +1,27 @@
 #include "util.h"
 
-int sprintf_uart16(uint8_t* buf, int* size, uint16_t value) {
-    uint16_t lsb = 0;
-    int len = snprintf(buf, *size, "[");
-    buf += len;
-    *size -= len;
-    for (int k=16-1; k>=0; k--) {
-        lsb = ((value >> k) & 0x0001);
-        len = snprintf(buf, *size, "%d", lsb);
-        buf += len;
-        *size -= len;
-        }
-    len = snprintf(buf, *size, "]");
-    buf += len;
-    *size -= len;
-    return *(size);
+
+int sprintf_char_array(uint8_t* buf, int* total, const char* str) {
+    int len;
+    buf += (len = snprintf(buf, *(total), str));
+    *(total) -= len;
+
+    return (*(total) > 0) && (len > 0);
+}
+
+int sprintf_uart16(uint8_t* buf, int* total, uint16_t val) {
+    int len;
+    buf += (len = snprintf(buf, *(total), "["));
+    *(total) -= len;
+
+    for (int k=15; k>=0; k--) {
+        uint16_t lsb = ((val >> k) & 0x0001);
+        buf += (len = snprintf(buf, *(total), "%d", lsb));
+        *(total) -= len;
+    }
+
+    buf += (len = snprintf(buf, *(total), "]"));
+    *(total) -= len;
+
+    return (*(total) > 0);
 }

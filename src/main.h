@@ -46,18 +46,6 @@ delay100ms
     }
 }
 
-static __INLINE void
-clear
-(
-    uint8_t buf[],
-    size_t len,
-    uint8_t val
-)
-{
-    int i = 0;
-    while((i++) < len) { buf[i] = val; }
-}
-
 typedef enum state {
   INIT,
   IDLE,
@@ -65,14 +53,14 @@ typedef enum state {
   TX_IMAGE,
   DECODE,
   FETCH,
-  END,
+  DONE,
   FAULT,
 } state_t;
 
 #define SLAVE_IDLE      0x00000000
-#define SLAVE_WRITE     0x00000001
-#define SLAVE_DECODING  0x00000002
-#define SLAVE_FINISHED  0x00000003
+#define MASTER_WRITE    0x00000001
+#define SLAVE_DECODE    0x00000002
+#define MASTER_READ     0x00000003
 #define SLAVE_END       0x00000004
 
 typedef struct slave {

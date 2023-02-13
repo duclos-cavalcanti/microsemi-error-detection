@@ -35,7 +35,6 @@ static long unsigned int SW_MASKS[2] = {
 #define LED_ON(CHAR)      led_on(CHAR)
 #define LED_OFF(CHAR)     led_off(CHAR)
 
-void led_set(LED_t LED_INDEX, LED_ACTION_t ACTION);
 void led_on(LED_t LED_INDEX);
 void led_off(LED_t LED_INDEX);
 

@@ -4,6 +4,7 @@
 #include "uart.h"
 #include "gpio.h"
 #include "timer.h"
+#include "util.h"
 #include "injection.h"
 
 // ==============================================================================
@@ -17,11 +18,12 @@ void uart_setup(void);
 
 system_t S = { 0 };
 
-#define SYS_STATE(STATE)                (S.state == STATE)
-#define SYS_WRITE_SLAVE(DATA, OFFSET)   HW_set_32bit_reg(EC_SLAVE_0 + 4 +  (OFFSET * 4), (uint32_t) DATA)
-#define SYS_READ_SLAVE(OFFSET)          HW_get_32bit_reg(EC_SLAVE_0 + 4 +  (OFFSET * 4))
+#define SYSTEM_STATE()                  S.state
+#define SYSTEM_STATE_SET(STATE)         S.state = STATE
 #define SLAVE_STATE()                   HW_get_32bit_reg(EC_SLAVE_0 + 0)
 #define SLAVE_STATE_SET(DATA)           HW_set_32bit_reg(EC_SLAVE_0 , (uint32_t) DATA)
+#define WRITE_SLAVE(DATA, OFFSET)       HW_set_32bit_reg(EC_SLAVE_0 + 4 +  (OFFSET * 4), (uint32_t) DATA)
+#define READ_SLAVE(OFFSET)              HW_get_32bit_reg(EC_SLAVE_0 + 4 +  (OFFSET * 4))
 
 // ==============================================================================
 // main
@@ -69,12 +71,12 @@ void system_fsm() {
             S.slave.tx_cnt          = 0;
 
             LED_ON(S.ld_idx);
-            S.state = IDLE;
+            SYSTEM_STATE_SET(IDLE);
             break;
 
         case IDLE:
             if (S.rx_cnt > 0 && S.rx_err != 1) {
-                S.state = RX_IMAGE;
+                SYSTEM_STATE_SET(RX_IMAGE);
                 LED_OFF(S.ld_idx);
                 LED_ON((--S.ld_idx));
             } else if (S.rx_err) {
@@ -84,24 +86,36 @@ void system_fsm() {
 
         case RX_IMAGE:
             if (S.rx_cnt == (PAYLOAD_LENGTH*PAYLOAD_TOTAL)) {
-                S.state = TX_IMAGE;
+                SYSTEM_STATE_SET(TX_IMAGE);
                 LED_OFF(S.ld_idx);
                 LED_ON((--S.ld_idx));
             }
             break;
 
         case TX_IMAGE:
-            if (S.slave.tx_cnt == (PAYLOAD_TOTAL)) {
-                S.state = DECODE;
-                SLAVE_STATE_SET(SLAVE_DECODING);
-                LED_OFF(S.ld_idx);
-                LED_ON((--S.ld_idx));
+            if (SLAVE_STATE() == SLAVE_IDLE) {
+                SLAVE_STATE_SET(MASTER_WRITE);
+
+            } else if (SLAVE_STATE() == SLAVE_WRITE) {
+
+                if (S.slave.tx_cnt < PAYLOAD_TOTAL) {
+                    S.slave.data = S.image_err_bits[S.slave.tx_cnt];
+                    WRITE_SLAVE(S.slave.data, (S.slave.tx_cnt++));
+
+                } else if (S.slave.tx_cnt == (PAYLOAD_TOTAL)) {
+                    SYSTEM_STATE_SET(DECODE);
+                    SLAVE_STATE_SET(SLAVE_DECODE);
+                    LED_OFF(S.ld_idx);
+                    LED_ON((--S.ld_idx));
+                }
+            } else {
+                SYSTEM_STATE_SET(FAULT);
             }
             break;
 
         case DECODE:
-            if (SLAVE_STATE() == SLAVE_FINISHED) {
-                S.state = FETCH;
+            if (SLAVE_STATE() == MASTER_READ) {
+                SYSTEM_STATE_SET(FETCH);
                 LED_OFF(S.ld_idx);
                 LED_ON(LED_0);
                 LED_ON(LED_1);
@@ -109,29 +123,21 @@ void system_fsm() {
             break;
 
         case FETCH:
-            for (int i=0; i<PAYLOAD_TOTAL; i++) {
-                delay100ms(2);
-                uint32_t data = SYS_READ_SLAVE(i);
+            for (uint8_t i=0; i<PAYLOAD_TOTAL; i++) {
+                uint32_t data = READ_SLAVE(i);
                 data = data >> 16;
-                S.image_dec_bits[i] = (0x0000FFFF & data);
+                S.image_dec_bits[i] = (uint16_t) (0x0000FFFF & data);
             }
             SLAVE_STATE_SET(SLAVE_END);
-
-            S.state = END;
+            SYSTEM_STATE_SET(END);
             break;
 
-        case END:
-            LED_ON(LED_0);
-            LED_ON(LED_1);
-            LED_ON(LED_2);
-            LED_ON(LED_3);
+        case DONE:
+            for (uint8_t i=LED_0; i<=LED_3; i++) LED_ON(LEDS[i]);
             break;
 
         case FAULT:
-            LED_OFF(LED_0);
-            LED_OFF(LED_1);
-            LED_OFF(LED_2);
-            LED_OFF(LED_3);
+            for (uint8_t i=LED_0; i<=LED_3; i++) LED_OFF(LEDS[i]);
             break;
 
         default:
@@ -141,13 +147,11 @@ void system_fsm() {
     if (S.b2_flag) { S.b2_flag = 0; }
 }
 
-#define EMPTY_SPACE ' '
 int system_snapshot() {
     uint8_t* buf = S.tx_buf;
-    int total = sizeof(S.tx_buf);
-    uint16_t payload, payload_err, payload_dec;
+    int len, total = sizeof(S.tx_buf);
 
-    int len = snprintf(buf, total,
+    len = snprintf(buf, total,
                    "POLL[%d]\n\r"
                    "------\n\r"
                    "SW1:  %d   \t| %dx\n\r"
@@ -172,58 +176,31 @@ int system_snapshot() {
     buf += len;
     total -= len;
 
-    len = snprintf(buf, total, "IMAGE BITS%*cIMAGE ERR BITS%*cIMAGE DEC BITS\n\r",
-                   (21 - 10),  EMPTY_SPACE,
-                   (21 - 14),  EMPTY_SPACE);
+    len = snprintf(buf, total,
+                  "IMAGE BITS%*cIMAGE ERR BITS%*cIMAGE DEC BITS\n\r",
+                  (21 - 10),  EMPTY_SPACE,
+                  (21 - 14),  EMPTY_SPACE);
     buf += len;
     total -= len;
 
     for (int i=0; i<PAYLOAD_TOTAL; i++) {
-        payload     = *(S.image_bits + i);
-        payload_err = *(S.image_err_bits + i);
-        payload_dec = *(S.image_dec_bits + i);
+       uint16_t payload     = *(S.image_bits + i);
+       uint16_t payload_err = *(S.image_err_bits + i);
+       uint16_t payload_dec = *(S.image_dec_bits + i);
 
-        len = snprintf(buf, total, "[");
-        buf += len;
-        total -= len;
+        sprintf_uart16(buf, &total, payload);
+        sprintf_char_array(buf, &total, " | ");
 
-        for (int k=PAYLOAD_LENGTH-1; k>=0; k--) {
-            uint16_t lsb = ((payload >> k) & 0x0001);
-            len = snprintf(buf, total, "%d", lsb);
-            buf += len;
-            total -= len;
-        }
+        sprintf_uart16(buf, &total, payload_err);
+        sprintf_char_array(buf, &total, " | ");
 
-        len = snprintf(buf, total, "] | [");
-        buf += len;
-        total -= len;
-
-        for (int l=PAYLOAD_LENGTH-1; l>=0; l--) {
-            uint16_t lsb = ((payload_err >> l) & 0x0001);
-            len = snprintf(buf, total, "%d", lsb);
-            buf += len;
-            total -= len;
-        }
-
-        len = snprintf(buf, total, "] | [");
-        buf += len;
-        total -= len;
-
-        for (int j=PAYLOAD_LENGTH-1; j>=0; j--) {
-            uint16_t lsb = ((payload_dec >> j) & 0x0001);
-            len = snprintf(buf, total, "%d", lsb);
-            buf += len;
-            total -= len;
-        }
-
-        len = snprintf(buf, total, "]\n\r");
-        buf += len;
-        total -= len;
+        sprintf_uart16(buf, &total, payload_dec);
+        sprintf_char_array(buf, &total, "\n\r");
     }
 
-    len += snprintf(buf + len, total - len,
-                   "-------------------------------------------------------\n\r",
-                   "\n");
+    sprintf_char_array(buf, &total,
+                       "-------------------------------------------------------\n\r"
+                       "\n");
 
     return (total > 0);
 }
@@ -239,17 +216,6 @@ void Timer1_IRQHandler(void) {
 
 // timer2 handler
 void Timer2_IRQHandler(void) {
-    if (SYS_STATE(TX_IMAGE)) {
-        // write to slave
-        if (SLAVE_STATE() == SLAVE_IDLE) {
-            SLAVE_STATE_SET(SLAVE_WRITE);
-        } else {
-            if (S.slave.tx_cnt < PAYLOAD_TOTAL) {
-                SYS_WRITE_SLAVE( (S.slave.data = S.image_err_bits[S.slave.tx_cnt]), S.slave.tx_cnt);
-                S.slave.tx_cnt++;
-            }
-        }
-    }
     MSS_TIM2_clear_irq();
 }
 
