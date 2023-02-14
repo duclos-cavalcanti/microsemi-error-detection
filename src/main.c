@@ -117,10 +117,9 @@ void system_fsm() {
             if (S.slave.finished) {
                 SLAVE_STATE_SET(MASTER_READ);
                 for (uint8_t i=0; i<PAYLOAD_TOTAL; i++) {
-                    delay100ms(5);
                     uint32_t data = READ_SLAVE(i);
-                    data = data >> 16;
-                    S.image_dec_bits[i] = (uint16_t) (0x0000FFFF & data);
+                    S.err_codes[i] = (0x00000003 & data);
+                    S.image_dec_bits[i] = (uint16_t) (0x0000FFFF & (data >> 16));
                 }
                 LED_OFF(S.ld_idx);
                 SLAVE_STATE_SET(SLAVE_END);
@@ -156,6 +155,7 @@ int system_snapshot() {
                    "LEDS[4-7]: \t| [%d%d%d%d]\n\r"
                    "UART[%d]:  \t| Bytes: [%d]\n\r"
                    "SLAVE[%d]  \t| Sent: %d\n\r"
+                   "STATE      \t| %d\n\r"
                    "-------------------------------------------------------\n\r",
                    ++S.poll,
                    S.b1_flag,
@@ -166,7 +166,8 @@ int system_snapshot() {
                    (S.rx_cnt/16),
                    S.rx_cnt,
                    S.slave.finished,
-                   S.slave.cnt
+                   S.slave.cnt,
+                   S.state
                    ));
     total -= len;
 
@@ -180,6 +181,7 @@ int system_snapshot() {
        uint16_t payload     = *(S.image_bits + i);
        uint16_t payload_err = *(S.image_err_bits + i);
        uint16_t payload_dec = *(S.image_dec_bits + i);
+       uint8_t  err_code = *(S.err_codes + i);
 
         buf += (len = snprintf(buf, total, "["));
         total -= len;
@@ -205,7 +207,10 @@ int system_snapshot() {
             buf += (len = snprintf(buf, total, "%d", lsb));
             total -= len;
         }
-        buf += (len = snprintf(buf, total, "]\n\r"));
+        buf += (len = snprintf(buf, total, "] ERR CODE: %d", err_code));
+        total -= len;
+
+        buf += (len = snprintf(buf, total, "\n\r"));
         total -= len;
     }
 

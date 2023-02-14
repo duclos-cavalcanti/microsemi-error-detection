@@ -92,6 +92,7 @@ typedef struct system {
     uint16_t  image_bits[PAYLOAD_TOTAL];
     uint16_t  image_err_bits[PAYLOAD_TOTAL];
     uint16_t  image_dec_bits[PAYLOAD_TOTAL];
+    uint8_t   err_codes[PAYLOAD_TOTAL];
 } system_t;
 
 #endif /* MAIN_H_ */
