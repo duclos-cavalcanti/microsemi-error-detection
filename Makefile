@@ -5,14 +5,25 @@ PWD := $(shell pwd)
 			debug \
 			screen \
 			drivers \
-			zip
+			setup freeze \
+			vhs vhs-setup view
 
-drivers:
+vhs-setup:
+	@[ -n "$(shell pacman -Qs vhs)" ] || sudo pacman -S vhs
+	@[ -f ./demo.tape ] || (vhs new demo.tape; printf "Be sure to edit the demo.tape for your vhs use-case!\n")
 
-zip:
-	@zip -r Project.zip microsemi
-	@mv Project.zip microsemi/Project.zip
-	@[ -d project ] && rm -rf project
+vhs:
+	vhs < demo.tape
+
+view:
+	@[ -f ./.github/assets/demo.gif ] && (mpv ./.github/assets/demo.gif)
+
+freeze:
+	pip3 freeze > module/requirements.txt
+
+setup:
+	python3 -m venv .venv
+	pip3 install -r module/requirements.txt
 
 screen:
 	@screen /dev/ttyUSB0 57600
