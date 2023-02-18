@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 DOCKER_NAME := libero-ubuntu-docker
-DOCKER_TAG  := liberoSoC
+DOCKER_TAG  := 20.04
 DOCKER_REPO := ubuntu-20.04
 
 PWD := $(shell pwd)
