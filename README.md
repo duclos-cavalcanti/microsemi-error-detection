@@ -24,7 +24,14 @@ using as much of the resources available possible. For our project we chose to e
 a typical scenario in Space Engineering, where communication between devices may be affected
 such that from a digital point of view specific bits of a payload can be "flipped" or corrupted.
 
-![title](.github/assets/diagramm.png)
+As per the image below
+
+<p align="center">
+  <center>
+  <img src=".github/assets/diagramm.png" align="middle" alt="title"
+       height="500">
+  </center>
+</p>
 
 Please look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed
 documentation on the tools used, workflow, installation and setup!
