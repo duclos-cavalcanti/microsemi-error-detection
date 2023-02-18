@@ -156,7 +156,7 @@ int system_snapshot() {
                    "UART[%d]:  \t| Bytes: [%d]\n\r"
                    "SLAVE[%d]  \t| Sent: %d\n\r"
                    "STATE      \t| %d\n\r"
-                   "-------------------------------------------------------\n\r",
+                   "------\n\r"
                    ++S.poll,
                    S.b1_flag,
                    S.b1_cnt,
@@ -215,7 +215,7 @@ int system_snapshot() {
     }
 
     buf += (len = snprintf(buf, total,
-                          "-------------------------------------------------------\n\r"
+                          "------\n\r"
                           "\n"));
 
     total -= len;
