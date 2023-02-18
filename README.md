@@ -24,17 +24,23 @@ using as much of the resources available possible. For our project we chose to e
 a typical scenario in Space Engineering, where communication between devices may be affected
 such that from a digital point of view specific bits of a payload can be "flipped" or corrupted.
 
-As per the image below
+As per the image below, example 16x8 pixel images are generated on the user's computer,
+they are encoded through a typical [(16,11) Hamming Encoding](https://en.wikipedia.org/wiki/Hamming_code).
+This given encoding is able to detect up to two errors in a given payload, as well as correct
+one bit flip.
 
 <p align="center">
   <center>
   <img src=".github/assets/diagramm.png" align="middle" alt="title"
-       height="500">
+       height="300">
   </center>
 </p>
 
 Please look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed
-documentation on the tools used, workflow, installation and setup!
+documentation on:
+ * tools
+ * installation
+ * and setup
 
 ## 2. Usage
 
