@@ -35,10 +35,10 @@ A showcase of the project in it's use can be seen in the `gif` below:
 
 
 ## 3. License
-These dotfiles are released under the MIT license. See [LICENSE](LICENSE).
+This project is released under the MIT license. See [LICENSE](LICENSE).
 
 ## 4. Donations
-We have a ko-fi and a buy-me-a-coffee account, so if you found this repo useful and would like to show your appreciation, feel free to do so!
+I have a ko-fi and a buy-me-a-coffee account, so if you found this repo useful and would like to show your appreciation, feel free to do so!
 
 <p align="center">
 <a href="https://ko-fi.com/duclos">
