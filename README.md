@@ -1,9 +1,9 @@
 <h1 align="center">Microsemi SmartFusion2 Error Detection</h1>
 <p align="center">
   FPGA/SoC Project Implementing Linear Error Correcting Encoding
-  <center>
-  <img src="./.github/assets/example.jpg" align="middle" alt="Example"
-       height="500">
+  <img src=".github/assets/diagramm.png" align="middle" alt="title"
+       width="400"
+       height="300">
   </center>
 </p>
 <br>
@@ -24,23 +24,11 @@ using as much of the resources available possible. For our project we chose to e
 a typical scenario in Space Engineering, where communication between devices may be affected
 such that from a digital point of view specific bits of a payload can be "flipped" or corrupted.
 
-As per the image below, example 16x8 pixel images are generated on the user's computer,
+Example 16x8 pixel images are generated on the user's computer,
 they are encoded through a typical [(16,11) Hamming Encoding](https://en.wikipedia.org/wiki/Hamming_code).
-This given encoding is able to detect up to two errors in a given payload, as well as correct
-one bit flip.
+This given encoding is able to detect up to two errors in a given payload, as well as correct one bit flip. As per the illustration above, a given image is generated, encoded and sent to the device using `UART` and done so entirely though a series of `python` scripts. The `MSS Microprocessr`  receives the data on an interrupt-driven mechanism and collects all the data needed, injects bit errors in a somewhat random fashion and passes it on to the `Fabric` which should take care of decoding and error correction!
 
-<p align="center">
-  <center>
-  <img src=".github/assets/diagramm.png" align="middle" alt="title"
-       height="300">
-  </center>
-</p>
-
-Please look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed
-documentation on:
- * tools
- * installation
- * and setup
+Please look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed documentation on toolchain and project setup!
 
 ## 2. Usage
 
