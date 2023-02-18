@@ -1,7 +1,7 @@
 <h1 align="center">Microsemi SmartFusion2 Error Detection</h1>
 <p align="center">
   FPGA/SoC Project Implementing Linear Error Correcting Encoding
-  <img src=".github/assets/diagramm.png" align="middle" alt="title"
+  <img src=".github/assets/diagramm-nobg.png" align="middle" alt="title"
        width="400"
        height="300">
   </center>
