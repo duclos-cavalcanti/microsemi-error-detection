@@ -1,9 +1,9 @@
 <h1 align="center">Microsemi SmartFusion2 Error Detection</h1>
 <p align="center">
   FPGA/SoC Project Implementing Linear Error Correcting Encoding
-  <img src=".github/assets/diagramm-nobg.png" align="middle" alt="title"
+  <img src=".github/assets/diagramm.png" align="middle" alt="title"
        width="400"
-       height="300">
+       height="370">
   </center>
 </p>
 <br>
@@ -26,11 +26,12 @@ such that from a digital point of view specific bits of a payload can be "flippe
 
 Example 16x8 pixel images are generated on the user's computer,
 they are encoded through a typical [(16,11) Hamming Encoding](https://en.wikipedia.org/wiki/Hamming_code).
-This given encoding is able to detect up to two errors in a given payload, as well as correct one bit flip. As per the illustration above, a given image is generated, encoded and sent to the device using `UART` and done so entirely though a series of `python` scripts. The `MSS Microprocessr`  receives the data on an interrupt-driven mechanism and collects all the data needed, injects bit errors in a somewhat random fashion and passes it on to the `Fabric` which should take care of decoding and error correction!
+This given encoding is able to detect up to two errors in a given payload, as well as correct one bit flip. As per the illustration above, a given image is generated, encoded and sent to the device using `UART` and done so entirely though a series of `python` scripts. The `MSS Microprocessr`  receives the data on an interrupt-driven mechanism and collects all the data needed, injects bit errors in a somewhat random fashion and passes it on to the `MSS Fabric` which should take care of decoding and error correction!
 
-Please look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed documentation on toolchain and project setup!
+Please look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed documentation on tool-chain and project setup!
 
 ## 2. Usage
+A showcase of the project in it's use can be seen in the `gif` below:
 
 
 ## 3. License
