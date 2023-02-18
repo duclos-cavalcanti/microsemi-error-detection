@@ -1,8 +1,7 @@
 SHELL := /bin/bash
 PWD := $(shell pwd)
 
-.PHONY: run test \
-			debug \
+.PHONY: run debug \
 			screen \
 			drivers \
 			setup freeze \
@@ -27,9 +26,6 @@ setup:
 
 screen:
 	@screen /dev/ttyUSB0 57600
-
-test:
-	@python3 main.py --mode test
 
 debug:
 	@stty -F /dev/ttyUSB0 57600
