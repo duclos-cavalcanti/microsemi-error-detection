@@ -1,4 +1,3 @@
-import sys
 from typing import List
 
 class HammingEncoder():
@@ -70,9 +69,3 @@ class HammingEncoder():
         self.EncodeDoubleError()
         return self.TransformStr(self.enc_data)
 
-
-def main():
-    pass
-
-if __name__ == "__main__":
-    main()

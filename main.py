@@ -1,7 +1,7 @@
 import sys
 import argparse
 
-from module import image, hamming, utils, uart_serial
+from module import project, image, hamming, utils, uart
 
 SQUID = ["0000000110000000",
          "0000011111100000",
@@ -12,25 +12,32 @@ SQUID = ["0000000110000000",
          "0011100000011100",
          "0001000000001000"]
 
-
-def Test():
-    uart = uart_serial.UART_Interface(timeout=0.5)
-    uart.TestMode(rand=False)
+SQUID_ARR = ''.join(SQUID)
 
 def Debug():
-    uart = uart_serial.UART_Interface(timeout=0.5)
-    uart.DebugMode()
+    uart_serial = uart.UART_Interface(timeout=0.5)
+    try:
+        while(1):
+            nr_lines = 0
+            for data in uart_serial.FetchData():
+                if nr_lines > 0: project.clean_screen(nr_lines)
+                project.write_screen(data)
+                nr_lines = len(data.split("\n")) - 1
+
+    except KeyboardInterrupt:
+        uart_serial.CleanUp()
+        sys.exit(0)
 
 def Start():
     encoder = hamming.HammingEncoder()
-    payload = [ encoder.Run(i) for i in utils.image_to_array(''.join(SQUID)) ]
+    payload = [ encoder.Run(i) for i in utils.image_to_array(SQUID_ARR) ]
 
     print("ERROR CORRECTION SIMULATION!")
     print("-------------------------------------------------------")
     print("LIVE FEED:")
 
-    uart = uart_serial.UART_Interface(timeout=0.5)
-    uart.ImageMode(payload=payload)
+    application = project.Application(payload)
+    application.start()
 
 def GetArgs():
     """docstring for GetArgs"""
@@ -52,10 +59,6 @@ def main():
     args = GetArgs()
     if args.mode == "debug":
         Debug()
-
-    elif args.mode == "test":
-        Test()
-
     else:
         Start()
 
