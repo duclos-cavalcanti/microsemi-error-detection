@@ -24,9 +24,11 @@ using as much of the resources available possible. For our project we chose to e
 a typical scenario in Space Engineering, where communication between devices may be affected
 such that from a digital point of view specific bits of a payload can be "flipped" or corrupted.
 
-Example 16x8 pixel images are generated on the user's computer,
-they are encoded through a typical [(16,11) Hamming Encoding](https://en.wikipedia.org/wiki/Hamming_code).
-This given encoding is able to detect up to two errors in a given payload, as well as correct one bit flip. A given image is generated, encoded and sent to the device using `UART` and done so entirely though a series of `python` scripts. The `MSS Microprocessr`  receives the data on an interrupt-driven mechanism, collects it, injects the necessary bit errors in a somewhat random fashion and passes it on to the `MSS Fabric` which should take care of decoding and error correction. The communication between the processor and the Fabric is done through the APB3 Bus Matrix.  What this is means, is that within the fabric a custom APB Slave is implemented as the actual Error Correction and Detection Module. It interfaces with the processor through a peripheral called the `Fabric Interface Controller` and does so according to the APB3 protocol. This facilitates communication substantially as a already existing mechanism is reused and creates a very easy abstraction to deal with both on the software and the hardware sides.
+Example 16x8 pixel images are generated on the user's computer
+and are manipulated following a typical [(16,11) Hamming Encoding](https://en.wikipedia.org/wiki/Hamming_code) structure.
+This given error correction mechanism is able to detect up to two errors in a given payload, as well as correct one bit flip. Finally, the data is sent to the device using `UART` and done so entirely though a series of `python` scripts. The `MSS Microprocessr`  receives the data on an interrupt-driven mechanism, collects it, injects the necessary bit errors in a somewhat random fashion and passes it on to the `MSS Fabric` which takes care of decoding and error correction.
+
+The communication between the processor and the Fabric is done through the APB3 Bus Matrix.  What this means is that within the fabric a custom APB Slave is implemented as the actual Error Correction and Detection Module. It interfaces with the processor through a peripheral called the `Fabric Interface Controller` and does so according to the APB3 Bus protocol. This facilitates communication substantially as an already existing mechanism is reused and creates a very easy abstraction to deal with both on the software and the hardware side.
 
 Please look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed documentation on tool-chain and project setup!
 
