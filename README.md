@@ -1,6 +1,6 @@
 <h1 align="center">Microsemi SmartFusion2 Error Detection</h1>
 <p align="center">
-  FPGA/SoC Implementation using Hamming Codes' Linear Error Correcting Encoding
+  FPGA/SoC Project Implementing Linear Error Correcting Encoding
   <center>
   <img src="./.github/assets/example.jpg" align="middle" alt="Example"
        height="500">
@@ -24,16 +24,16 @@ using as much of the resources available possible. For our project we chose to e
 a typical scenario in Space Engineering, where communication between devices may be affected
 such that from a digital point of view specific bits of a payload can be "flipped" or corrupted.
 
-Look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed documentation!
+Please look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed
+documentation on the tools used, workflow, installation and setup!
 
 ## 2. Usage
 
-## 3. Showcase
 
-## 4. License
+## 3. License
 These dotfiles are released under the MIT license. See [LICENSE](LICENSE).
 
-## 5. Donations
+## 4. Donations
 We have a ko-fi and a buy-me-a-coffee account, so if you found this repo useful and would like to show your appreciation, feel free to do so!
 
 <p align="center">
