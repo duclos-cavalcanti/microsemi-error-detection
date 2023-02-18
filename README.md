@@ -9,37 +9,25 @@
 <br>
 
 ## 1. Introduction
+As part of the course "Integrated Systems for Industry and Space Applications" we were
+introduced to the challenges and conditions that may come to exist when developing
+integrated systems in space.
+
+Besides the theoretical aspect of said course, we also had the opportunity to develop
+a project on the [Microsemi SmartFusion2 Maker Kit](https://www.microchip.com/en-us/products/fpgas-and-plds/system-on-chip-fpgas/smartfusion-2-fpgas)
+which should consist of both software and hardware components, as integrated
+systems do!
+
 Look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed documentation!
 
-## 2. Installation and Setup
-See [SETUP.md](SETUP.md).
+## 2. Usage
 
-## 3. Usage
-### 3.1 License
-1. Go to folder `~/.local/share/microsemi/license/Linux_Licensing_Daemon`
-2. Start license daemon by running `./lmgrd -c ../License.dat -log ~/log.log`
-3. To stop licensing daemon, go to the same location and run `./lmdown -c ../License.dat -q`
+## 3. Showcase
 
-### 3.2 Libero
-1. Go to folder `~/.local/share/microsemi/Libero_SoC_v2021.3/libero`
-2. Run `./bin/libero`
-
-### 3.3 Softconsole
-1. Go to folder `~/.local/share/microsemi/SoftConsole-v2021.1/`
-2. Run `./softconsole.sh`
-
-## 4. Documentation
-### 4.1 Manuals
-- Libero: `docs/libero`.
-- SmartFusion2MakerKit: `docs/smf2/`.
-
-### 4.2 Useful Links
-- [Gantt Timelines](https://www.onlinegantt.com/#/gantt)
-
-## 5. License
+## 4. License
 These dotfiles are released under the MIT license. See [LICENSE](LICENSE).
 
-## 6. Donations
+## 5. Donations
 We have a ko-fi and a buy-me-a-coffee account, so if you found this repo useful and would like to show your appreciation, feel free to do so!
 
 <p align="center">
