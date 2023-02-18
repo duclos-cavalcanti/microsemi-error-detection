@@ -9,7 +9,8 @@
 <br>
 
 ## 1. Introduction
-As part of the course "Integrated Systems for Industry and Space Applications" we were
+As part of the course "Integrated Systems for Industry and Space Applications" in our
+ECE Masters at TUM we were
 introduced to the challenges and conditions that may come to exist when developing
 integrated systems in space.
 
@@ -17,6 +18,11 @@ Besides the theoretical aspect of said course, we also had the opportunity to de
 a project on the [Microsemi SmartFusion2 Maker Kit](https://www.microchip.com/en-us/products/fpgas-and-plds/system-on-chip-fpgas/smartfusion-2-fpgas)
 which should consist of both software and hardware components, as integrated
 systems do!
+
+Said project had to somewhat emulate a typical space engineering situation and do so
+using as much of the resources available possible. For our project we chose to emulate
+a typical scenario in Space Engineering, where communication between devices may be affected
+such that from a digital point of view specific bits of a payload can be "flipped" or corrupted.
 
 Look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed documentation!
 
