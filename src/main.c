@@ -4,7 +4,6 @@
 #include "uart.h"
 #include "gpio.h"
 #include "timer.h"
-#include "util.h"
 #include "injection.h"
 
 // ==============================================================================
