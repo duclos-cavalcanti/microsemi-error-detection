@@ -31,7 +31,10 @@ This given error correction mechanism is able to detect up to two errors in a gi
 The communication between the processor and the Fabric is done through the `APB3 Bus Matrix`.  What this means is that within the fabric a custom APB Slave is implemented as the actual Error Correction and Detection Module. It interfaces with the processor through a peripheral called the `Fabric Interface Controller` and does so according to the APB3 Bus protocol. This facilitates communication substantially as an already existing mechanism is reused and creates a very easy abstraction to deal with both on the software and the hardware side.
 
 ## 2. Documentation
-Please look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed documentation on tool-chain and project setup!
+Please take a look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki)!
+
+Detailed documentation on tool-chain setup can be found there, example projects and
+step-by-step instructions to get work up and running as well.
 
 ## 3. Usage
 A showcase of the project can be seen below:
