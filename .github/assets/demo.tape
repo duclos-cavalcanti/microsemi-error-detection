@@ -61,4 +61,4 @@ Sleep 1500ms
 Type "make demo"
 Sleep 500ms
 Enter
-Sleep 10s
+Sleep 30s

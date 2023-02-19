@@ -34,7 +34,8 @@ The communication between the processor and the Fabric is done through the `APB3
 Please look at the [wiki](https://github.com/duclos-cavalcanti/microsemi-error-detection/wiki) for a detailed documentation on tool-chain and project setup!
 
 ## 3. Usage
-A showcase of the project in it's use can be seen in the `gif` below:
+A showcase of the project can be seen below:
+![video](.github/assets/demo.gif?)
 
 ## 4. License
 This project is released under the MIT license. See [LICENSE](LICENSE).
