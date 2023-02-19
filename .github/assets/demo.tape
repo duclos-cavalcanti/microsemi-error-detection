@@ -48,10 +48,11 @@ Output .github/assets/demo.gif
 
 Require echo
 
-Set FontSize 32
-Set Width 1200
-Set Height 600
+Set FontSize 24
+Set Width 1400
+Set Height 1000
 Set LoopOffset 50%
+Set Theme BlueBerryPie
 
 Type echo "Welcome to the error correction detection demo!"
 Sleep 500ms
