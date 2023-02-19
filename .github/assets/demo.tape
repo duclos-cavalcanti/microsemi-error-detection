@@ -53,6 +53,12 @@ Set Width 1200
 Set Height 600
 Set LoopOffset 50%
 
-Type "echo 'Welcome to VHS!'" Sleep 500ms  Enter
+Type echo "Welcome to the error correction detection demo!"
+Sleep 500ms
+Enter
+Sleep 1500ms
 
-Sleep 5s
+Type "make demo"
+Sleep 500ms
+Enter
+Sleep 10s
