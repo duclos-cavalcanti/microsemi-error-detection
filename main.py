@@ -36,8 +36,8 @@ def Start():
     print("-------------------------------------------------------")
     print("LIVE FEED:")
 
-    application = project.Application(payload)
-    application.start()
+    demo = project.Project(payload)
+    demo.start()
 
 def GetArgs():
     """docstring for GetArgs"""
