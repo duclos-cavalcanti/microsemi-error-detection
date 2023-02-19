@@ -52,7 +52,7 @@ Set FontSize 24
 Set Width 1400
 Set Height 1000
 Set LoopOffset 50%
-Set Theme BlueBerryPie
+Set Theme Zenburn
 
 Type echo "Welcome to the error correction detection demo!"
 Sleep 500ms
