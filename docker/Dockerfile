@@ -8,11 +8,8 @@ LABEL remarks="Dockerfile for LiberoSoC"
 RUN apt-get update \
     && apt-get install -y \
         xorg vnc4server \
-        libxrender-dev \
-        libxtst-dev \
-        build-essential \
-        default-jre \
-        gcc-multilib git \
+        libxrender-dev libxtst-dev apt-file lsb \
+        build-essential default-jre gcc-multilib git \
         wget curl vim tmux nano \
         sudo locales gnupg \
     && apt-get clean \
@@ -31,5 +28,15 @@ RUN cd /tmp \
 ENV DISPLAY :0
 ENV GEOMETRY 1920x1080
 
-WORKDIR /home/project
-ENTRYPOINT ["./docker/entry.sh"]
+RUN mkdir -p /home/docker/software
+RUN mkdir -p /home/docker/repo
+
+COPY docker/software /home/docker/software
+COPY docker/license /home/docker/software
+COPY docker/install.sh /home/docker/
+
+RUN ln -s /tmp /usr/tmp
+RUN /home/docker/install.sh
+
+WORKDIR /home/docker
+ENTRYPOINT ["/home/docker/repo/docker/entry.sh"]

@@ -17,10 +17,10 @@ XAUTH := ${HOME}/.Xauthority
 
 vhs-setup:
 	@[ -n "$(shell pacman -Qs vhs)" ] || sudo pacman -S vhs
-	@[ -f ./demo.tape ] || (vhs new demo.tape; printf "Be sure to edit the demo.tape for your vhs use-case!\n")
+	@[ -f .github/assets/demo.tape ] || (vhs new demo.tape; printf "Be sure to edit the demo.tape for your vhs use-case!\n")
 
 vhs: vhs-setup
-	vhs < demo.tape
+	vhs < .github/assets/demo.tape
 
 view:
 	@[ -f ./.github/assets/demo.gif ] && (mpv ./.github/assets/demo.gif)
@@ -46,11 +46,11 @@ setup:
 	docker build ./docker -t ${TAG}:${REPO}
 
 run:
-	touch ${XAUTH}
+	[ -f ${XAUTH} ] || touch ${XAUTH}
 	docker run --name ${DOCKER_NAME} \
 			   --network=host \
 			   -e DISPLAY=${DISPLAY} \
-			   -v ${PWD}:/home/project \
+			   -v ${PWD}:/home/docker/repo \
 			   -v ${XAUTH}:/root/.Xauthority \
 			   -v /etc/localtime:/etc/localtime \
 			   --detach-keys="ctrl-@" \
