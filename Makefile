@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 
-DOCKER_NAME := libero-ubuntu-docker
-DOCKER_TAG  := 20.04
-DOCKER_REPO := ubuntu-20.04
+DOCKER_NAME := libero-ubuntu-toolchain
+DOCKER_TAG  := libero-ubuntu-tag
+DOCKER_REPO := libero-ubuntu-repo
 
 PWD := $(shell pwd)
 DISPLAY := ${DISPLAY}
@@ -13,7 +13,9 @@ XAUTH := ${HOME}/.Xauthority
 		debug \
 		demo \
 		venv freeze \
-		setup run
+		build run
+
+all: build
 
 vhs-setup:
 	@[ -n "$(shell pacman -Qs vhs)" ] || sudo pacman -S vhs
@@ -42,8 +44,8 @@ venv:
 freeze:
 	pip3 freeze > module/requirements.txt
 
-setup:
-	docker build ./docker -t ${TAG}:${REPO}
+build:
+	docker build ./docker -t ${DOCKER_TAG}:${DOCKER_REPO}
 
 run:
 	[ -f ${XAUTH} ] || touch ${XAUTH}
