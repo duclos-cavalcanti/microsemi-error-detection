@@ -4,7 +4,9 @@ LABEL Email="daniel.duclos-cavalcanti@gmail.com"
 LABEL Maintainer="Daniel Duclos-Cavalcanti"
 LABEL remarks="Dockerfile for LiberoSoC"
 
+ARG DISPLAY
 ARG DEBIAN_FRONTEND=noninteractive
+ENV GEOMETRY 1920x1080
 
 # Base System
 RUN apt-get update \
@@ -16,9 +18,6 @@ RUN apt-get update \
         sudo locales gnupg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-ENV DISPLAY :0
-ENV GEOMETRY 1920x1080
 
 # Language
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen && update-locale
@@ -38,4 +37,4 @@ RUN ln -s /tmp /usr/tmp
 RUN /home/docker/install.sh
 
 WORKDIR /home/docker
-ENTRYPOINT ["/home/docker/repo/docker/entry.sh"]
+ENTRYPOINT [ "/home/docker/repo/docker/entry.sh" ]

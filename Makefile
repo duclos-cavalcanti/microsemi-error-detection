@@ -1,8 +1,9 @@
 SHELL := /bin/bash
 
-DOCKER_NAME := libero-ubuntu-toolchain
-DOCKER_TAG  := libero-ubuntu-tag
-DOCKER_REPO := libero-ubuntu-repo
+DOCKER_NAME 	:= libero-ubuntu-toolchain
+DOCKER_TAG  	:= libero-ubuntu-tag
+DOCKER_REPO 	:= libero-ubuntu-repo
+IS_DOCKER_BUILT := $(shell docker images | tail -n +2 | awk '{print $2}' | grep ${DOCKER_TAG})
 
 PWD := $(shell pwd)
 DISPLAY := ${DISPLAY}
@@ -13,9 +14,10 @@ XAUTH := ${HOME}/.Xauthority
 		debug \
 		demo \
 		venv freeze \
-		build run
+		uninstall install clean \
+		run
 
-all: build
+all: install
 
 vhs-setup:
 	@[ -n "$(shell pacman -Qs vhs)" ] || sudo pacman -S vhs
@@ -44,17 +46,36 @@ venv:
 freeze:
 	pip3 freeze > module/requirements.txt
 
-build:
-	docker build ./docker -t ${DOCKER_TAG}:${DOCKER_REPO}
+clean:
+	@docker rmi $(shell docker images --filter dangling=true | tail -n +2 | awk '{print $$3}')
+
+install-pre:
+	@docker build ./docker -t ${DOCKER_REPO}:${DOCKER_TAG}
+
+install-success:
+	@printf "Docker has already been built!\n"
+	@printf "Run 'make uninstall' to remove built docker.\n"
+
+install: $(if ${IS_DOCKER_BUILT}, install-success, install-pre)
+
+uninstall-pre:
+	@docker rmi $(shell docker images | grep ${DOCKER_TAG} | awk '{print $$3}')
+
+uninstall-success:
+	@docker rmi $(shell docker images | grep ${DOCKER_TAG} | awk '{print $$3}')
+
+uninstall: $(if ${IS_DOCKER_BUILT}, uninstall-pre, uninstall-success)
 
 run:
-	[ -f ${XAUTH} ] || touch ${XAUTH}
+	@[ -f ${XAUTH} ] || touch ${XAUTH}
 	docker run --name ${DOCKER_NAME} \
-			   --network=host \
-			   -e DISPLAY=${DISPLAY} \
-			   -v ${PWD}:/home/docker/repo \
-			   -v ${XAUTH}:/root/.Xauthority \
-			   -v /etc/localtime:/etc/localtime \
-			   --detach-keys="ctrl-@" \
-			   -it ${DOCKER_TAG}:${DOCKER_REPO} \
-			   --rm
+			    -it ${DOCKER_REPO}:${DOCKER_TAG} \
+			    --network=host \
+			    -e DISPLAY=${DISPLAY} \
+			    -v ${PWD}:/home/docker/repo \
+			    -v ${XAUTH}:/root/.Xauthority \
+			    -v /etc/localtime:/etc/localtime \
+				--privileged \
+				-v /dev/bus/usb:/dev/bus/usb:rw \
+			    --detach-keys="ctrl-@" \
+			    --rm true
