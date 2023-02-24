@@ -60,15 +60,15 @@ install: $(if ${IS_DOCKER_BUILT}, install-success, install-pre)
 
 uninstall-pre:
 	@docker rmi $(shell docker images | grep ${DOCKER_TAG} | awk '{print $$3}')
+	@docker system prune
 
 uninstall-success:
-	@docker rmi $(shell docker images | grep ${DOCKER_TAG} | awk '{print $$3}')
 
 uninstall: $(if ${IS_DOCKER_BUILT}, uninstall-pre, uninstall-success)
 
 run:
 	@[ -f ${XAUTH} ] || touch ${XAUTH}
-	docker run --name ${DOCKER_NAME} \
+	@docker run --name ${DOCKER_NAME} \
 			    -it ${DOCKER_REPO}:${DOCKER_TAG} \
 			    --network=host \
 			    -e DISPLAY=${DISPLAY} \

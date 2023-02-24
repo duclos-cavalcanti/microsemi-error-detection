@@ -37,4 +37,3 @@ RUN ln -s /tmp /usr/tmp
 RUN /home/docker/install.sh
 
 WORKDIR /home/docker
-ENTRYPOINT [ "/home/docker/repo/docker/entry.sh" ]
