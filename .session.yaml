@@ -1,5 +1,5 @@
 session_name: space
-start_directory: "/home/duclos/Documents/uni/space/microsemi-error-detection/"
+start_directory: "/home/duclos/Documents/topics/hw/microsemi-error-detection/"
 windows:
   - window_name: md
     panes:
@@ -10,7 +10,6 @@ windows:
       - clear && ls -l
       - nvim Makefile
   - window_name: src
-    start_directory: "/home/duclos/Documents/uni/space/microsemi-error-detection/microsemi/"
     panes:
       - nvim .
   - window_name: py
